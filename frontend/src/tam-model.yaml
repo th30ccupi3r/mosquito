@@ -1,0 +1,60 @@
+trust_boundaries: null
+human_agents:
+  - New Customer 1
+  - New Customer 2
+  - name: New Customer 3
+    boundary: left
+agents: []
+areas: null
+components:
+  - name: New Component 1
+    subcomponents:
+      - name: New Subcomponent 1
+  - name: New Component 2
+    subcomponents:
+      - name: New Subcomponent 3
+storages:
+  - New Storage 1
+  - name: Azure DB
+    boundary: right
+channels:
+  - name: chan_1
+    from: New Customer 1
+    to: New Component 1/New Subcomponent 1
+    protocol: https
+    tamEdgeType: unidirectional
+    direction: sourceToTarget
+    sourceArrowPos: 0.1
+    targetArrowPos: 0.9
+  - name: chan_2
+    from: New Customer 2
+    to: New Component 2
+    protocol: https
+    tamEdgeType: bidirectional
+    direction: sourceToTarget
+    sourceArrowPos: 0.1
+    targetArrowPos: 0.9
+accesses:
+  - from: New Component 1/New Subcomponent 1
+    to: New Storage 1
+    tamEdgeType: modifyAccess
+    direction: sourceToTarget
+    displayAsDoubleArc: true
+    modifySymbolPos: 0.5
+    sourceArrowPos: 0.1
+    targetArrowPos: 0.9
+  - from: New Component 2/New Subcomponent 3
+    to: Azure DB
+    tamEdgeType: modifyAccess
+    direction: sourceToTarget
+    displayAsDoubleArc: true
+    modifySymbolPos: 0.5
+    sourceArrowPos: 0.1
+    targetArrowPos: 0.9
+boundaries:
+  left:
+    enabled: true
+    label: On-Premise
+  right:
+    enabled: true
+    label: Cloud

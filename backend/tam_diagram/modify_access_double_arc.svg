@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="20" viewBox="0 0 64 20">
+  <!-- double-arc / two-way curly arrows (SAP TAM modify access marker) -->
+  <path d="M10 6 C 22 2, 42 2, 54 6" fill="none" stroke="#222" stroke-width="2" stroke-linecap="round"/>
+  <path d="M54 6 l-6 -3 l2 6 z" fill="#222"/>
+  <path d="M54 14 C 42 18, 22 18, 10 14" fill="none" stroke="#222" stroke-width="2" stroke-linecap="round"/>
+  <path d="M10 14 l6 3 l-2 -6 z" fill="#222"/>
+</svg>

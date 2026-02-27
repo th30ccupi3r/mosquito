@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20">
+  <!-- Two small arrows (up/down) to the left, like PowerDesigner TAM -->
+  <polygon points="3,6 1,9 5,9" fill="#000"/>
+  <polygon points="3,14 1,11 5,11" fill="#000"/>
+  <!-- Open circle on the line -->
+  <circle cx="13" cy="10" r="4" fill="#fff" stroke="#000" stroke-width="1"/>
+</svg>

@@ -1,0 +1,19 @@
+html, body, #root { height: 100%; margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial; }
+* { box-sizing: border-box; }
+button { cursor: pointer; }
+.kbd { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace; font-size: 12px; }
+
+.tam-select,
+.tam-input {
+  background: var(--panel2);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 6px 10px;
+  outline: none;
+}
+
+.tam-select:focus,
+.tam-input:focus {
+  border-color: rgba(56, 189, 248, 0.65);
+}

@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20">
+  <!-- Unidirectional arrow (base orientation: left-to-right). Rotation is applied for direction. -->
+  <polygon points="2,8 2,12 6,10" fill="#000"/>
+  <!-- Open circle on the line -->
+  <circle cx="13" cy="10" r="4" fill="#fff" stroke="#000" stroke-width="1"/>
+</svg>

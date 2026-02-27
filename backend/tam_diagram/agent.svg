@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">
+  <!-- Generic (non-human) agent: "active" block with a small status dot -->
+  <rect x="10" y="14" width="44" height="36" rx="6" fill="none" stroke="#222" stroke-width="4"/>
+  <circle cx="48" cy="20" r="4" fill="#222"/>
+  <path d="M18 30h28" stroke="#222" stroke-width="4" stroke-linecap="round"/>
+  <path d="M18 40h18" stroke="#222" stroke-width="4" stroke-linecap="round"/>
+</svg>

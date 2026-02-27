@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>TAM Block Diagram → draw.io</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script>
+      // IMPORTANT:
+      // mxBasePath must point to the folder that CONTAINS the "js/" directory.
+      // Our static assets live at /public/mxgraph/js/* so base is /mxgraph.
+      window.mxBasePath = "/mxgraph";
+      window.mxImageBasePath = "/mxgraph/images";
+      window.mxLanguage = "en";
+      // We don't need mxGraph resource/style loading for the preview.
+      window.mxLoadResources = false;
+      window.mxLoadStylesheets = false;
+    </script>
+    <script src="/mxgraph/js/mxClient.js"></script>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
