@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="grid lg:grid-cols-2 gap-6">
+  <div class="space-y-6">
+    <div>
+      <h2 class="text-2xl font-semibold">Copilot Prompt Generator</h2>
+      <p class="text-zinc-400">Generate a prompt for an LLM, then paste strict JSON back into the app for import.</p>
+    </div>
+
+    {% if errors %}
+      <div class="card border border-red-500/40 bg-red-500/10 text-red-200">
+        <ul class="list-disc list-inside space-y-1">
+          {% for error in errors %}
+            <li>{{ error }}</li>
+          {% endfor %}
+        </ul>
+      </div>
+    {% endif %}
+
+    {% if success %}
+      <div class="card border border-emerald-500/40 bg-emerald-500/10 text-emerald-200">{{ success }}</div>
+    {% endif %}
+
+    <form method="post" action="/copilot/generate" class="card space-y-5">
+      <div>
+        <label class="label">Category</label>
+        <input
+          type="text"
+          name="category"
+          id="copilot-category"
+          class="input"
+          value="{{ form.get('category', '') }}"
+          {% if form.get('same_category_as_component') %}readonly{% endif %}
+          required
+        >
+      </div>
+
+      <div>
+        <label class="label">Component</label>
+        <input
+          type="text"
+          name="component"
+          id="copilot-component"
+          class="input"
+          value="{{ form.get('component', '') }}"
+          required
+        >
+      </div>
+
+      <div class="rounded-xl border border-zinc-800 p-4 bg-zinc-900/70">
+        <label class="flex items-start gap-3 cursor-pointer">
+          <input
+            type="checkbox"
+            name="same_category_as_component"
+            id="same-category-as-component"
+            value="true"
+            {% if form.get('same_category_as_component') %}checked{% endif %}
+            class="mt-1 h-4 w-4"
+          >
+          <div>
+            <div class="font-medium">Use component as category</div>
+            <p class="text-sm text-zinc-400 mt-1">
+              Keeps the category field in sync with the component for this prompt and import.
+            </p>
+          </div>
+        </label>
+      </div>
+
+      <div>
+        <label class="label">Product details (optional)</label>
+        <textarea name="product_details" class="input min-h-[140px]">{{ form.get('product_details', '') }}</textarea>
+      </div>
+
+      <button type="submit" class="btn-primary">Generate Copilot Prompt</button>
+    </form>
+  </div>
+
+  <div class="space-y-6">
+    <div class="card space-y-3">
+      <h3 class="text-lg font-semibold">Generated Prompt</h3>
+      <textarea class="input min-h-[360px] font-mono text-sm" readonly>{{ prompt }}</textarea>
+    </div>
+
+    <form method="post" action="/copilot/import" class="card space-y-5">
+      <input type="hidden" name="category" value="{{ form.get('category', '') }}">
+      <input type="hidden" name="component" value="{{ form.get('component', '') }}">
+      {% if form.get('same_category_as_component') %}
+      <input type="hidden" name="same_category_as_component" value="true">
+      {% endif %}
+      <input type="hidden" name="product_details" value="{{ form.get('product_details', '') }}">
+
+      <div>
+        <h3 class="text-lg font-semibold">Import JSON</h3>
+        <p class="text-sm text-zinc-400">Paste strict JSON returned by the LLM.</p>
+      </div>
+
+      <div>
+        <label class="label">JSON payload</label>
+        <textarea name="import_json" class="input min-h-[320px] font-mono text-sm" required>{{ form.get('import_json', '') }}</textarea>
+      </div>
+
+      <button type="submit" class="btn-primary">Validate and Import</button>
+    </form>
+  </div>
+</div>
+
+<script>
+  const categoryInput = document.getElementById('copilot-category');
+  const componentInput = document.getElementById('copilot-component');
+  const syncCheckbox = document.getElementById('same-category-as-component');
+
+  function syncCategoryFromComponent() {
+    if (!syncCheckbox.checked) {
+      categoryInput.readOnly = false;
+      return;
+    }
+
+    categoryInput.value = componentInput.value;
+    categoryInput.readOnly = true;
+  }
+
+  syncCheckbox.addEventListener('change', syncCategoryFromComponent);
+  componentInput.addEventListener('input', syncCategoryFromComponent);
+  syncCategoryFromComponent();
+</script>
+{% endblock %}

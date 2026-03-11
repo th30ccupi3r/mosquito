@@ -1,0 +1,187 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="space-y-6">
+  <div>
+    <h2 class="text-2xl font-semibold">Export to Excel</h2>
+    <p class="text-zinc-400">Append threats to an existing <code>Threats</code> worksheet in an uploaded workbook.</p>
+  </div>
+
+  {% if error %}
+    <div class="card border border-red-500/40 bg-red-500/10 text-red-200">{{ error }}</div>
+  {% endif %}
+
+  <form method="get" class="card grid gap-4 items-end">
+    <div>
+      <label class="label">Categories</label>
+      <div class="rounded-xl border border-zinc-800 divide-y divide-zinc-900 max-h-[220px] overflow-auto">
+        <label class="flex items-center gap-3 p-3 hover:bg-zinc-900/60 cursor-pointer">
+          <input
+            type="checkbox"
+            name="categories"
+            value="__generic__"
+            {% if "__generic__" in selected_categories %}checked{% endif %}
+          >
+          <span>Generic</span>
+        </label>
+        {% for category in categories %}
+          <label class="flex items-center gap-3 p-3 hover:bg-zinc-900/60 cursor-pointer">
+            <input
+              type="checkbox"
+              name="categories"
+              value="{{ category }}"
+              {% if category in selected_categories %}checked{% endif %}
+            >
+            <span>{{ category }}</span>
+          </label>
+        {% endfor %}
+      </div>
+      <p class="help">Tick one or more categories. Leave all unticked to show all categories.</p>
+    </div>
+
+    <div class="flex gap-3">
+      <button type="submit" class="btn-primary">Apply</button>
+      <a href="/export" class="btn-secondary">Reset</a>
+    </div>
+  </form>
+
+  <form method="post" enctype="multipart/form-data" class="card space-y-5">
+    {% for category in selected_categories %}
+    <input type="hidden" name="categories" value="{{ category }}">
+    {% endfor %}
+
+    <div>
+      <label class="label">Workbook (.xlsx)</label>
+      <input type="file" name="workbook" accept=".xlsx" class="input" required>
+      <p class="help">The app will append rows to the existing <code>Threats</code> worksheet without overwriting current data.</p>
+    </div>
+
+    <div class="rounded-xl border border-zinc-800 p-4 bg-zinc-900/70">
+      <label class="flex items-start gap-3 cursor-pointer">
+        <input
+          type="checkbox"
+          name="replace_component_with_new_component"
+          value="true"
+          class="mt-1 h-4 w-4"
+        >
+        <div>
+          <div class="font-medium">Replace "component" with "new component"</div>
+          <p class="text-sm text-zinc-400 mt-1">
+            Applies only to the Excel export questions. Stored threats are not changed.
+          </p>
+        </div>
+      </label>
+    </div>
+
+    <div>
+      <label class="label">Select specific threats (optional)</label>
+      <div class="flex flex-wrap gap-3">
+        <button type="button" class="btn-secondary" data-toggle-scope="all" data-toggle-state="on">Select all visible</button>
+        <button type="button" class="btn-secondary" data-toggle-scope="all" data-toggle-state="off">Clear all visible</button>
+      </div>
+      <div class="max-h-[500px] overflow-auto rounded-xl border border-zinc-800 divide-y divide-zinc-900 mt-3">
+        {% for group in export_groups %}
+          <section class="p-4 space-y-4">
+            <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+              <div>
+                <div class="font-medium">{{ group.label }}</div>
+                <div class="text-xs text-zinc-400">Toggle the whole category, a subcategory, or individual threats.</div>
+              </div>
+              <div class="flex gap-2">
+                <button type="button" class="btn-secondary" data-toggle-group="{{ group.key }}" data-toggle-state="on">Select category</button>
+                <button type="button" class="btn-secondary" data-toggle-group="{{ group.key }}" data-toggle-state="off">Clear category</button>
+              </div>
+            </div>
+
+            {% for subgroup in group.subgroups %}
+              <div class="rounded-xl border border-zinc-800/80 bg-zinc-900/40 p-4 space-y-3">
+                <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                  <div>
+                    <div class="text-sm font-medium">{{ subgroup.label }}</div>
+                    <div class="text-xs text-zinc-400">Subcategory-specific threats.</div>
+                  </div>
+                  <div class="flex gap-2">
+                    <button type="button" class="btn-secondary" data-toggle-group="{{ subgroup.key }}" data-toggle-state="on">Select subcategory</button>
+                    <button type="button" class="btn-secondary" data-toggle-group="{{ subgroup.key }}" data-toggle-state="off">Clear subcategory</button>
+                  </div>
+                </div>
+
+                <div class="space-y-2">
+                  {% for threat in subgroup.threats %}
+                    <label class="flex items-start gap-3 p-3 rounded-lg hover:bg-zinc-900/60 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        name="threat_ids"
+                        value="{{ threat.id }}"
+                        class="mt-1"
+                        data-category="{{ group.key }}"
+                        data-subcategory="{{ subgroup.key }}"
+                      >
+                      <div>
+                        <div class="text-sm font-medium">{{ threat.question }}</div>
+                        <div class="text-xs text-zinc-400 mt-1">{{ (stride_categories|default({})).get(threat.threat_category, threat.threat_category) }}</div>
+                        <div class="text-xs text-zinc-400 mt-1">{{ threat.technology or "Generic" }} · {{ threat.typical_threat }}</div>
+                      </div>
+                    </label>
+                  {% endfor %}
+                </div>
+              </div>
+            {% endfor %}
+
+            {% for threat in group.ungrouped %}
+              <label class="flex items-start gap-3 p-3 rounded-lg hover:bg-zinc-900/60 cursor-pointer">
+                <input
+                  type="checkbox"
+                  name="threat_ids"
+                  value="{{ threat.id }}"
+                  class="mt-1"
+                  data-category="{{ group.key }}"
+                >
+                <div>
+                  <div class="text-sm font-medium">{{ threat.question }}</div>
+                  <div class="text-xs text-zinc-400 mt-1">{{ (stride_categories|default({})).get(threat.threat_category, threat.threat_category) }}</div>
+                  <div class="text-xs text-zinc-400 mt-1">{{ threat.technology or "Generic" }} · {{ threat.typical_threat }}</div>
+                </div>
+              </label>
+            {% endfor %}
+          </section>
+        {% else %}
+          <div class="p-4 text-zinc-400">No threats available for the selected filter.</div>
+        {% endfor %}
+      </div>
+      <p class="help">Leave all unchecked to export all threats matching the selected category filter.</p>
+    </div>
+
+    <div class="flex gap-3">
+      <button type="submit" class="btn-primary">Append to Excel</button>
+      <a href="/" class="btn-secondary">Back</a>
+    </div>
+  </form>
+</div>
+
+<script>
+  const threatCheckboxes = Array.from(document.querySelectorAll('input[name="threat_ids"]'));
+
+  function setChecked(scope, state) {
+    const enabled = state === 'on';
+    threatCheckboxes.forEach((checkbox) => {
+      if (scope === 'all') {
+        checkbox.checked = enabled;
+        return;
+      }
+
+      if (checkbox.dataset.category === scope || checkbox.dataset.subcategory === scope) {
+        checkbox.checked = enabled;
+      }
+    });
+  }
+
+  document.querySelectorAll('[data-toggle-scope="all"]').forEach((button) => {
+    button.addEventListener('click', () => setChecked('all', button.dataset.toggleState));
+  });
+
+  document.querySelectorAll('[data-toggle-group]').forEach((button) => {
+    button.addEventListener('click', () => setChecked(button.dataset.toggleGroup, button.dataset.toggleState));
+  });
+</script>
+{% endblock %}

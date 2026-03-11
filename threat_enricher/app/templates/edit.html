@@ -1,0 +1,190 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="max-w-3xl space-y-6">
+  <div>
+    <h2 class="text-2xl font-semibold">{{ page_title }}</h2>
+    <p class="text-zinc-400">Store reusable threat-modelling questions in the bank.</p>
+  </div>
+
+  {% if errors %}
+    <div class="card border border-red-500/40 bg-red-500/10 text-red-200">
+      <ul class="list-disc list-inside space-y-1">
+        {% for error in errors %}
+          <li>{{ error }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+  {% endif %}
+
+  <form method="post" action="{{ action }}" class="card space-y-5">
+    <div>
+      <label class="label">Category</label>
+      <div class="flex gap-3">
+        <input
+          type="text"
+          name="category"
+          id="category-input"
+          value="{{ form.get('category', '') }}"
+          class="input"
+          list="category-options"
+          placeholder="Select an existing category or add a new one"
+          autocomplete="off"
+        >
+        <button type="button" class="btn-secondary shrink-0" id="open-category-modal">Add Category</button>
+      </div>
+      <datalist id="category-options">
+        {% for category in categories %}
+          <option value="{{ category }}"></option>
+        {% endfor %}
+      </datalist>
+      <p class="help">Leave blank for Generic.</p>
+    </div>
+
+    <div>
+      <label class="label">Threat category</label>
+      <select name="threat_category" class="input" required>
+        {% for value, label in stride_categories.items() %}
+          <option value="{{ value }}" {% if form.get('threat_category') == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div>
+      <label class="label">Subcategory (optional)</label>
+      <input
+        type="text"
+        name="subcategory"
+        value="{{ form.get('subcategory', '') }}"
+        class="input"
+        placeholder="e.g. Cloud Connector"
+      >
+      <p class="help">Use this when a threat only applies to part of a category.</p>
+    </div>
+
+    <div>
+      <label class="label">Question</label>
+      <textarea name="question" class="input min-h-[100px]" required>{{ form.get('question', '') }}</textarea>
+    </div>
+
+    <div>
+      <label class="label">Typical threat</label>
+      <textarea name="typical_threat" class="input min-h-[120px]" required>{{ form.get('typical_threat', '') }}</textarea>
+    </div>
+
+    <div class="grid md:grid-cols-2 gap-4">
+      <div>
+        <label class="label">Impact</label>
+        <input type="text" name="impact" value="{{ form.get('impact', '') }}" class="input" required>
+      </div>
+      <div>
+        <label class="label">Easiness of attack</label>
+        <input type="text" name="easiness_of_attack" value="{{ form.get('easiness_of_attack', '') }}" class="input" required>
+      </div>
+    </div>
+
+    <div class="rounded-xl border border-zinc-800 p-4 bg-zinc-900/70">
+      <label class="flex items-start gap-3 cursor-pointer">
+        <input
+          type="checkbox"
+          name="export_new_component"
+          value="true"
+          {% if form.get('export_new_component') %}checked{% endif %}
+          class="mt-1 h-4 w-4"
+        >
+        <div>
+          <div class="font-medium">Excel export uses "new component"</div>
+          <p class="text-sm text-zinc-400 mt-1">
+            Replace <strong>component</strong> with <strong>new component</strong> in the exported Excel question only.
+          </p>
+        </div>
+      </label>
+    </div>
+
+    <div class="flex gap-3">
+      <button type="submit" class="btn-primary">Save Threat</button>
+      <a href="/" class="btn-secondary">Cancel</a>
+    </div>
+  </form>
+</div>
+
+<dialog id="category-modal" class="modal-shell">
+  <form method="dialog" class="modal-card space-y-5">
+    <div>
+      <h3 class="text-lg font-semibold">Add Category</h3>
+      <p class="text-sm text-zinc-400 mt-1">Create a new category and apply it to this threat.</p>
+    </div>
+
+    <div>
+      <label class="label">New category</label>
+      <input
+        type="text"
+        id="new-category-input"
+        class="input"
+        placeholder="e.g. Cloud Connector"
+      >
+    </div>
+
+    <div class="flex justify-end gap-3">
+      <button type="button" class="btn-secondary" id="cancel-category-modal">Cancel</button>
+      <button type="button" class="btn-primary" id="save-category-modal">Use Category</button>
+    </div>
+  </form>
+</dialog>
+
+<script>
+  const categoryInput = document.getElementById('category-input');
+  const categoryOptions = document.getElementById('category-options');
+  const categoryModal = document.getElementById('category-modal');
+  const openCategoryModal = document.getElementById('open-category-modal');
+  const cancelCategoryModal = document.getElementById('cancel-category-modal');
+  const saveCategoryModal = document.getElementById('save-category-modal');
+  const newCategoryInput = document.getElementById('new-category-input');
+
+  function addCategoryOption(value) {
+    const normalizedValue = value.trim();
+    if (!normalizedValue) {
+      return;
+    }
+
+    const existingOption = Array.from(categoryOptions.options).find(
+      (option) => option.value.toLowerCase() === normalizedValue.toLowerCase()
+    );
+
+    if (!existingOption) {
+      const option = document.createElement('option');
+      option.value = normalizedValue;
+      categoryOptions.appendChild(option);
+    }
+
+    categoryInput.value = normalizedValue;
+  }
+
+  openCategoryModal.addEventListener('click', () => {
+    newCategoryInput.value = categoryInput.value.trim();
+    categoryModal.showModal();
+    newCategoryInput.focus();
+  });
+
+  cancelCategoryModal.addEventListener('click', () => categoryModal.close());
+
+  saveCategoryModal.addEventListener('click', () => {
+    addCategoryOption(newCategoryInput.value);
+    categoryModal.close();
+    categoryInput.focus();
+  });
+
+  categoryModal.addEventListener('click', (event) => {
+    if (event.target === categoryModal) {
+      categoryModal.close();
+    }
+  });
+
+  newCategoryInput.addEventListener('keydown', (event) => {
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      saveCategoryModal.click();
+    }
+  });
+</script>
+{% endblock %}

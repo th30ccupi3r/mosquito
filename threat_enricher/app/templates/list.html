@@ -1,0 +1,188 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="space-y-6">
+  <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
+    <div>
+      <h2 class="text-2xl font-semibold">Threat Library</h2>
+      <p class="text-zinc-400">Browse, search, filter, edit, and delete reusable threats.</p>
+    </div>
+    <a href="/threats/new" class="btn-primary">Add Threat</a>
+  </div>
+
+  {% if notice %}
+    <div class="card border border-emerald-500/40 bg-emerald-500/10 text-emerald-200">{{ notice }}</div>
+  {% endif %}
+
+  {% if error %}
+    <div class="card border border-red-500/40 bg-red-500/10 text-red-200">{{ error }}</div>
+  {% endif %}
+
+  <form method="get" class="card grid md:grid-cols-3 gap-4 items-end">
+    <div>
+      <label class="label">Category</label>
+      <select name="category" class="input">
+        <option value="">All categories</option>
+        <option value="__generic__" {% if selected_category == "__generic__" %}selected{% endif %}>Generic</option>
+        {% for category in categories %}
+          <option value="{{ category }}" {% if selected_category == category %}selected{% endif %}>{{ category }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div>
+      <label class="label">Search</label>
+      <input
+        type="text"
+        name="q"
+        value="{{ q }}"
+        class="input"
+        placeholder="Search question or typical threat"
+      >
+    </div>
+
+    <div class="flex gap-3">
+      <button type="submit" class="btn-primary">Apply</button>
+      <a href="/" class="btn-secondary">Reset</a>
+    </div>
+  </form>
+
+  <div class="card grid lg:grid-cols-[1fr_auto] gap-6 items-start">
+    <form method="post" action="/threats/import/json" enctype="multipart/form-data" class="space-y-4">
+      <div>
+        <h3 class="text-lg font-semibold">Import JSON Library</h3>
+        <p class="text-sm text-zinc-400">Seed threats from a repo-managed JSON file.</p>
+      </div>
+
+      <div>
+        <label class="label">JSON file</label>
+        <input type="file" name="library_json" accept=".json,application/json" class="input" required>
+      </div>
+
+      <label class="flex items-start gap-3 cursor-pointer">
+        <input type="checkbox" name="replace_existing" value="true" class="mt-1 h-4 w-4">
+        <div>
+          <div class="font-medium">Replace existing threats</div>
+          <p class="text-sm text-zinc-400 mt-1">Unchecked will append imported threats to the current library.</p>
+        </div>
+      </label>
+
+      <button type="submit" class="btn-primary">Import JSON</button>
+    </form>
+
+    <div class="space-y-4">
+      <div>
+        <h3 class="text-lg font-semibold">Export JSON Library</h3>
+        <p class="text-sm text-zinc-400">Download the full threat library as a git-friendly JSON file.</p>
+      </div>
+      <a href="/threats/export/json" class="btn-secondary">Download JSON</a>
+    </div>
+  </div>
+
+  <form method="post" action="/threats/delete" class="card space-y-4" onsubmit="return confirmBulkDelete();">
+    <input type="hidden" name="category" value="{{ selected_category or '' }}">
+    <input type="hidden" name="q" value="{{ q }}">
+
+    <div class="flex items-center justify-between gap-4">
+      <label class="flex items-center gap-3 text-sm text-zinc-300 cursor-pointer">
+        <input type="checkbox" id="select-all-threats">
+        <span>Select all visible</span>
+      </label>
+      <button type="submit" class="btn-danger">Delete selected</button>
+    </div>
+
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead>
+          <tr class="text-left text-zinc-400 border-b border-zinc-800">
+            <th class="py-3 pr-4 w-10"></th>
+            <th class="py-3 pr-4">Category</th>
+            <th class="py-3 pr-4">Threat Category</th>
+            <th class="py-3 pr-4">Subcategory</th>
+            <th class="py-3 pr-4">Question</th>
+            <th class="py-3 pr-4">Typical Threat</th>
+            <th class="py-3 pr-4">Impact</th>
+            <th class="py-3 pr-4">Easiness</th>
+            <th class="py-3">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for threat in threats %}
+          <tr class="border-b border-zinc-900 align-top">
+            <td class="py-4 pr-4">
+              <input type="checkbox" name="selected_ids" value="{{ threat.id }}" class="threat-select">
+            </td>
+            <td class="py-4 pr-4">{{ threat.technology or "Generic" }}</td>
+            <td class="py-4 pr-4">
+              <span class="badge">{{ stride_categories[threat.threat_category] }}</span>
+            </td>
+            <td class="py-4 pr-4">{{ threat.subcategory or "-" }}</td>
+            <td class="py-4 pr-4">{{ threat.question }}</td>
+            <td class="py-4 pr-4">{{ threat.typical_threat }}</td>
+            <td class="py-4 pr-4">{{ threat.impact }}</td>
+            <td class="py-4 pr-4">{{ threat.easiness_of_attack }}</td>
+            <td class="py-4">
+              <div class="flex gap-2">
+                <a href="/threats/{{ threat.id }}/edit" class="btn-secondary">Edit</a>
+                <button
+                  type="submit"
+                  class="btn-danger"
+                  formaction="/threats/{{ threat.id }}/delete"
+                  formmethod="post"
+                  onclick="return confirm('Delete this threat?');"
+                >
+                  Delete
+                </button>
+              </div>
+            </td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="9" class="py-8 text-zinc-400">No threats found.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </form>
+</div>
+
+<script>
+  const selectAllThreats = document.getElementById('select-all-threats');
+  const threatCheckboxes = Array.from(document.querySelectorAll('.threat-select'));
+
+  function syncSelectAllState() {
+    if (!threatCheckboxes.length) {
+      selectAllThreats.checked = false;
+      selectAllThreats.indeterminate = false;
+      return;
+    }
+
+    const checkedCount = threatCheckboxes.filter((checkbox) => checkbox.checked).length;
+    selectAllThreats.checked = checkedCount === threatCheckboxes.length;
+    selectAllThreats.indeterminate = checkedCount > 0 && checkedCount < threatCheckboxes.length;
+  }
+
+  function confirmBulkDelete() {
+    const checkedCount = threatCheckboxes.filter((checkbox) => checkbox.checked).length;
+    if (!checkedCount) {
+      alert('Select at least one threat to delete.');
+      return false;
+    }
+    return confirm(`Delete ${checkedCount} selected threat${checkedCount === 1 ? '' : 's'}?`);
+  }
+
+  selectAllThreats?.addEventListener('change', () => {
+    threatCheckboxes.forEach((checkbox) => {
+      checkbox.checked = selectAllThreats.checked;
+    });
+    syncSelectAllState();
+  });
+
+  threatCheckboxes.forEach((checkbox) => {
+    checkbox.addEventListener('change', syncSelectAllState);
+  });
+
+  syncSelectAllState();
+</script>
+{% endblock %}

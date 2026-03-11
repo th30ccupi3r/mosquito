@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>mosquito: threat enricher</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: "class"
+    }
+  </script>
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body class="dark bg-zinc-950 text-zinc-100 min-h-screen">
+  <header class="border-b border-zinc-800 bg-zinc-900/90 sticky top-0 backdrop-blur">
+    <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between gap-4">
+      <div>
+        <h1 class="text-xl font-semibold tracking-tight"><a href="/" class="hover:text-white">mosquito: threat enricher</a></h1>
+        <p class="text-sm text-zinc-400">Threat-modelling bank, Excel append export, and LLM import</p>
+      </div>
+      <nav class="flex items-center gap-3 text-sm">
+        <a href="/" class="nav-link">Threats</a>
+        <a href="/threats/new" class="nav-link">Create Threat</a>
+        <a href="/export" class="nav-link">Export to Excel</a>
+        <a href="/copilot" class="nav-link">Copilot Prompt + Import</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-6 py-8">
+    {% block content %}{% endblock %}
+  </main>
+</body>
+</html>
