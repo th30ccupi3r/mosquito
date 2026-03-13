@@ -1,6 +1,6 @@
 import json
 
-from .config import STRIDE_CATEGORIES
+from .config import STRIDE_CATEGORIES, IMPACT_OPTIONS, EASINESS_OF_ATTACK_OPTIONS
 
 REQUIRED_IMPORT_FIELDS = [
     "threat_category",
@@ -42,6 +42,17 @@ def validate_import_payload(payload: dict, selected_category: str | None):
         if category not in STRIDE_CATEGORIES:
             item_errors.append("invalid 'threat_category'")
 
+        impact = item.get("impact")
+        if isinstance(impact, str) and impact.strip().lower() not in IMPACT_OPTIONS:
+            item_errors.append("invalid 'impact'")
+
+        easiness_of_attack = item.get("easiness_of_attack")
+        if (
+            isinstance(easiness_of_attack, str)
+            and easiness_of_attack.strip().lower() not in EASINESS_OF_ATTACK_OPTIONS
+        ):
+            item_errors.append("invalid 'easiness_of_attack'")
+
         if item_errors:
             errors.append(f"Item {idx}: " + "; ".join(item_errors))
             continue
@@ -67,8 +78,8 @@ def validate_import_payload(payload: dict, selected_category: str | None):
                 "threat_category": item["threat_category"].strip(),
                 "question": item["question"].strip(),
                 "typical_threat": item["typical_threat"].strip(),
-                "impact": item["impact"].strip(),
-                "easiness_of_attack": item["easiness_of_attack"].strip(),
+                "impact": item["impact"].strip().lower(),
+                "easiness_of_attack": item["easiness_of_attack"].strip().lower(),
                 "export_new_component": bool(item.get("export_new_component", False)),
             }
         )

@@ -5,8 +5,8 @@
       "threat_category": "tampering",
       "question": "Does the component validate input safely before processing requests?",
       "typical_threat": "An attacker submits crafted payloads that manipulate server-side logic through insufficient input validation.",
-      "impact": "high",
-      "easiness_of_attack": "medium",
+      "impact": "severe",
+      "easiness_of_attack": "advanced",
       "export_new_component": false
     },
     {
@@ -14,16 +14,16 @@
       "threat_category": "information_disclosure",
       "question": "Does the component expose sensitive configuration or tenant data to unauthorised users?",
       "typical_threat": "An attacker accesses logs or APIs that reveal secrets or customer information due to weak access controls.",
-      "impact": "high",
-      "easiness_of_attack": "medium",
+      "impact": "severe",
+      "easiness_of_attack": "advanced",
       "export_new_component": false
     },
     {
       "threat_category": "spoofing",
       "question": "Can the component be spoofed by an attacker pretending to be a trusted caller?",
       "typical_threat": "An attacker impersonates an internal service and submits requests that the system trusts without sufficient verification.",
-      "impact": "medium",
-      "easiness_of_attack": "medium",
+      "impact": "moderate",
+      "easiness_of_attack": "advanced",
       "export_new_component": false
     }
   ]

@@ -11,3 +11,17 @@ STRIDE_CATEGORIES = {
     "elevation_of_privilege": "Elevation of Privilege",
     "stride": "STRIDE (overlapping)",
 }
+
+IMPACT_OPTIONS = {
+    "minor": "Minor",
+    "moderate": "Moderate",
+    "severe": "Severe",
+    "significant": "Significant",
+}
+
+EASINESS_OF_ATTACK_OPTIONS = {
+    "easy": "Easy",
+    "advanced": "Advanced",
+    "complex": "Complex",
+    "very complex": "Very Complex",
+}

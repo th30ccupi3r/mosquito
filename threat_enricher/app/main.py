@@ -14,7 +14,13 @@ from sqlalchemy import select, or_, delete
 from .database import SessionLocal, engine, Base, ensure_schema
 from .models import Threat
 from .schemas import ThreatForm
-from .config import STRIDE_CATEGORIES, ALLOWED_EXTENSIONS, MAX_UPLOAD_SIZE
+from .config import (
+    STRIDE_CATEGORIES,
+    IMPACT_OPTIONS,
+    EASINESS_OF_ATTACK_OPTIONS,
+    ALLOWED_EXTENSIONS,
+    MAX_UPLOAD_SIZE,
+)
 from .excel import append_threats_to_workbook
 from .prompt import build_copilot_prompt
 from .validation import parse_import_json, validate_import_payload
@@ -85,6 +91,11 @@ def normalize_category_filters(values: list[str] | None) -> list[str]:
 def load_category_options(db: Session) -> list[str]:
     tech_values = db.execute(select(Threat.technology).distinct()).scalars().all()
     return sorted({t for t in tech_values if t and t.strip()})
+
+
+def load_subcategory_options(db: Session) -> list[str]:
+    subcategory_values = db.execute(select(Threat.subcategory).distinct()).scalars().all()
+    return sorted({value.strip() for value in subcategory_values if value and value.strip()})
 
 
 def build_list_redirect(notice: str | None = None, error: str | None = None) -> str:
@@ -234,7 +245,10 @@ def new_threat(request: Request, db: Session = Depends(get_db)):
             "form": {"category": ""},
             "errors": [],
             "categories": load_category_options(db),
+            "subcategories": load_subcategory_options(db),
             "stride_categories": STRIDE_CATEGORIES,
+            "impact_options": IMPACT_OPTIONS,
+            "easiness_of_attack_options": EASINESS_OF_ATTACK_OPTIONS,
         },
     )
 
@@ -276,7 +290,10 @@ def create_threat(
                 "form": data,
                 "errors": [str(exc)],
                 "categories": load_category_options(db),
+                "subcategories": load_subcategory_options(db),
                 "stride_categories": STRIDE_CATEGORIES,
+                "impact_options": IMPACT_OPTIONS,
+                "easiness_of_attack_options": EASINESS_OF_ATTACK_OPTIONS,
             },
             status_code=400,
         )
@@ -314,7 +331,10 @@ def edit_threat_form(threat_id: int, request: Request, db: Session = Depends(get
             },
             "errors": [],
             "categories": load_category_options(db),
+            "subcategories": load_subcategory_options(db),
             "stride_categories": STRIDE_CATEGORIES,
+            "impact_options": IMPACT_OPTIONS,
+            "easiness_of_attack_options": EASINESS_OF_ATTACK_OPTIONS,
         },
     )
 
@@ -362,7 +382,10 @@ def edit_threat(
                 "form": data,
                 "errors": [str(exc)],
                 "categories": load_category_options(db),
+                "subcategories": load_subcategory_options(db),
                 "stride_categories": STRIDE_CATEGORIES,
+                "impact_options": IMPACT_OPTIONS,
+                "easiness_of_attack_options": EASINESS_OF_ATTACK_OPTIONS,
             },
             status_code=400,
         )

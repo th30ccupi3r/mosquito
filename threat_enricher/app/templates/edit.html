@@ -57,8 +57,15 @@
         name="subcategory"
         value="{{ form.get('subcategory', '') }}"
         class="input"
+        list="subcategory-options"
         placeholder="e.g. Cloud Connector"
+        autocomplete="off"
       >
+      <datalist id="subcategory-options">
+        {% for subcategory in subcategories %}
+          <option value="{{ subcategory }}"></option>
+        {% endfor %}
+      </datalist>
       <p class="help">Use this when a threat only applies to part of a category.</p>
     </div>
 
@@ -75,11 +82,27 @@
     <div class="grid md:grid-cols-2 gap-4">
       <div>
         <label class="label">Impact</label>
-        <input type="text" name="impact" value="{{ form.get('impact', '') }}" class="input" required>
+        <select name="impact" class="input" required>
+          <option value="" disabled {% if not form.get('impact') %}selected{% endif %}>Select impact</option>
+          {% for value, label in impact_options.items() %}
+            <option value="{{ value }}" {% if form.get('impact') == value %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+          {% if form.get('impact') and form.get('impact') not in impact_options %}
+            <option value="{{ form.get('impact') }}" selected>{{ form.get('impact') }}</option>
+          {% endif %}
+        </select>
       </div>
       <div>
         <label class="label">Easiness of attack</label>
-        <input type="text" name="easiness_of_attack" value="{{ form.get('easiness_of_attack', '') }}" class="input" required>
+        <select name="easiness_of_attack" class="input" required>
+          <option value="" disabled {% if not form.get('easiness_of_attack') %}selected{% endif %}>Select easiness</option>
+          {% for value, label in easiness_of_attack_options.items() %}
+            <option value="{{ value }}" {% if form.get('easiness_of_attack') == value %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+          {% if form.get('easiness_of_attack') and form.get('easiness_of_attack') not in easiness_of_attack_options %}
+            <option value="{{ form.get('easiness_of_attack') }}" selected>{{ form.get('easiness_of_attack') }}</option>
+          {% endif %}
+        </select>
       </div>
     </div>
 
