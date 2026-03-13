@@ -4,21 +4,24 @@ import re
 from openpyxl import load_workbook
 from .models import Threat
 
-REQUIRED_HEADERS = [
-    "Component (TAM)",
-    "Threat category",
-    "Questions",
-    "Typical threats",
-    "Mitigated (y/n)",
-    "Attack path",
-    "Impact (see matrix)",
-    "Easiness of attack (see matrix)",
-    "Risk severity (see matrix)",
-    "Comment/Follow up",
-    "Jira to migitation (Jira, Github, ...)",
-    "Threat info",
-    "Worst Case",
-]
+HEADER_ALIASES = {
+    "Component (TAM)": ["Component (TAM)"],
+    "Threat category": ["Threat category"],
+    "Questions": ["Questions"],
+    "Typical threats": ["Typical threats"],
+    "Mitigated (y/n)": ["Mitigated (y/n)"],
+    "Attack path": ["Attack path"],
+    "Impact (see matrix)": ["Impact (see matrix)"],
+    "Easiness of attack (see matrix)": ["Easiness of attack (see matrix)"],
+    "Risk severity (see matrix)": ["Risk severity (see matrix)"],
+    "Comment / Follow-up": ["Comment / Follow-up", "Comment/Follow up"],
+    "Link to mitigation (Jira, GitHub, ...)": [
+        "Link to mitigation (Jira, GitHub, ...)",
+        "Jira to migitation (Jira, Github, ...)",
+    ],
+    "Threat info": ["Threat info"],
+    "Worst Case": ["Worst Case"],
+}
 
 
 def _replace_component_for_export(question: str, enabled: bool) -> str:
@@ -52,13 +55,23 @@ def append_threats_to_workbook(
     ws = wb["Threats"]
 
     headers = [cell.value for cell in ws[1]]
-    header_positions = {
+    raw_header_positions = {
         str(header).strip(): index
         for index, header in enumerate(headers, start=1)
         if isinstance(header, str) and header.strip()
     }
+    header_positions: dict[str, int] = {}
+    missing: list[str] = []
 
-    missing = [header for header in REQUIRED_HEADERS if header not in header_positions]
+    for canonical_header, aliases in HEADER_ALIASES.items():
+        matched_column = next(
+            (raw_header_positions[alias] for alias in aliases if alias in raw_header_positions),
+            None,
+        )
+        if matched_column is None:
+            missing.append(canonical_header)
+            continue
+        header_positions[canonical_header] = matched_column
 
     if missing:
         raise ValueError("Missing headers: " + ", ".join(missing))
@@ -77,8 +90,8 @@ def append_threats_to_workbook(
             "Impact (see matrix)": threat.impact,
             "Easiness of attack (see matrix)": threat.easiness_of_attack,
             "Risk severity (see matrix)": "",
-            "Comment/Follow up": "",
-            "Jira to migitation (Jira, Github, ...)": "",
+            "Comment / Follow-up": "",
+            "Link to mitigation (Jira, GitHub, ...)": "",
             "Threat info": "",
             "Worst Case": "",
         }
